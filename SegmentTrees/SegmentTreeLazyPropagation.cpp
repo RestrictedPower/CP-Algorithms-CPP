@@ -18,10 +18,11 @@ public:
 
     // Constructor with initial array
     SegmentTree(const std::vector<T> &arr,
+                T identity,
                 MergeOperation merge_op,
                 ApplyLazyToValueOperation update_op,
                 CombineLazyOperation combine_lazy)
-        : n(arr.size()), identity(arr.empty() ? T{} : arr[0]),
+        : n(arr.size()), identity(identity),
           merge_values(merge_op), apply_lazy_to_value(update_op), combine_lazy(combine_lazy) {
         tree.assign(4 * n, Node(identity));
         build(arr, 1, 0, n - 1);
@@ -37,6 +38,14 @@ public:
         update(1, 0, n - 1, l, r, val);
     }
 
+    void dbg() {
+        string res;
+        for (int i = 0; i < n; i++) {
+            res += to_string(query(i, i)) + ", ";
+        }
+        res = "[" + res + "]";
+        cout << res << endl;
+    }
 
     static constexpr auto MIN = [](T a, T b) { return std::min(a, b); };
     static constexpr auto MAX = [](T a, T b) { return std::max(a, b); };
@@ -102,7 +111,7 @@ private:
         }
 
         if (l <= start && end <= r) {
-            apply_lazy(tree[node_idx], lazyVal);
+            update_lazy(tree[node_idx], lazyVal);
             push(node_idx, start, end);
             return;
         }
@@ -123,8 +132,8 @@ private:
 
             // If not a leaf node, propagate to children
             if (start != end) {
-                apply_lazy(tree[2 * node_idx], tree[node_idx].lazy);
-                apply_lazy(tree[2 * node_idx + 1], tree[node_idx].lazy);
+                update_lazy(tree[2 * node_idx], tree[node_idx].lazy);
+                update_lazy(tree[2 * node_idx + 1], tree[node_idx].lazy);
             }
 
             // Reset lazy tag and flag for current node
@@ -133,7 +142,7 @@ private:
     }
 
     // Applies the lazy to the given node.
-    void apply_lazy(Node& node, LazyT newLazy) {
+    void update_lazy(Node &node, LazyT newLazy) {
         node.lazy = node.has_lazy ? combine_lazy(node.lazy, newLazy) : newLazy;
         node.has_lazy = true;
     }
