@@ -10,6 +10,6 @@ void precompute() {
 }
 
 // To be used separately:
-int inv(int a) {
+long long inv(long long a) {
     return a <= 1 ? a : MOD - (MOD / a) * inv(MOD % a) % MOD;
 }
